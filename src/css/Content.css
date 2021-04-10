@@ -1,0 +1,108 @@
+.Content {
+    margin-left:230px;
+    margin-top: 75px;
+}
+
+td {
+    padding:10px;
+}
+
+/* Member/Group/Profile */
+#searchText {
+    text-shadow: #e75480 0px 0px 10px;
+}
+
+.idolName {
+    font-size: 70px;
+    font-style: oblique;
+    margin: auto;
+    width: fit-content;
+    margin-bottom: 30px;
+}
+.company {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin: auto;
+    width:fit-content;
+    font-size: 40px;
+    font-style: oblique;
+}
+
+.songOptionPreviewButton{
+    background-color: transparent;
+    border-style: solid;
+    border-color: pink;
+    border-radius:10px;
+    padding-top: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    box-shadow: #e75480 0px 0px 10px;
+    outline-color: pink;
+    color: black;
+    transition: 1s ease-in-out;
+    background-color: white;
+}
+
+.songOptionPreviewButton:hover {
+    transform:scale(1.1,1.1);
+}
+
+
+.memberTable {
+    background-color: pink;
+    border-radius: 10px;
+    box-shadow: #e75480 0px 0px 10px;
+    margin-top: 30px;
+    margin: auto;
+}
+
+#bottomButtons {
+    margin: auto;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#deleteAcc {
+    margin:auto;
+}
+
+.meminfo {
+    padding:10px;
+    text-align: left;
+}
+
+.membersList {
+    padding:10px;
+    columns: 2;
+    width:60%;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 30px;
+    background-color: pink;
+    border-radius: 10px;
+    box-shadow: #e75480 0px 0px 10px;
+  }
+
+.memberli {
+    list-style-type: none;
+    text-align: center;
+    font-size: 40px;
+    padding:10px;
+    width:fit-content;
+    margin: auto;
+}
+
+/* Profile */
+#deleteAcc {
+    font-size: 10px;
+}
+
+#bio {
+    resize: none;
+    width: 170px;
+    height:100px;
+}
+
+th, td {
+    padding: 15px;
+}
