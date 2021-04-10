@@ -10,8 +10,10 @@ class MyGroup extends React.Component {
 
     loggedIn = () => {
         if(sessionStorage.getItem("login") === this.state.username){
-        return true;
-        } else return false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     roundToTwo(num) {    
@@ -19,12 +21,10 @@ class MyGroup extends React.Component {
     }
 
     userButtons = () => {
-        if(sessionStorage.getItem("login") && this.state.members.length > 0) {
-        document.getElementById("perflink").style.display = "inline-block";
-        document.getElementById("namelink").style.display = "inline-block";
+        if(this.loggedIn() && this.state.members.length > 0) {
+            document.getElementById("actions").style.display = "block";
         } else {
-        document.getElementById("perflink").style.display = "none";
-        document.getElementById("namelink").style.display = "none";
+            document.getElementById("actions").style.display = "none";
         }
     }
 
@@ -51,10 +51,6 @@ class MyGroup extends React.Component {
             this.calcAverages();
             this.userButtons();       
         });
-
-        // Group is empty
-        document.getElementById("perflink").style.display = "none";
-        
     }
     
     calcAverages = () => {
@@ -101,7 +97,7 @@ class MyGroup extends React.Component {
 
 
     printHeader = () => {
-        if(this.loggedIn){
+        if(this.loggedIn()){
             return (
                 <tr className="mgRowHeader">
                 <th className="mgHeader1">Member</th><th className="mgHeader">Original Group</th><th className="mgHeader">Singing</th><th className="mgHeader">Rapping</th><th className="mgHeader">Dancing</th><th className="mgHeader2"></th>
@@ -117,7 +113,7 @@ class MyGroup extends React.Component {
     }
 
     printMembersList = () => {
-        if(this.loggedIn){
+        if(this.loggedIn()){
         // Include button to remove if logged in to this account
         console.log(this.state.members);
             return this.state.members.map(member => (
@@ -153,7 +149,7 @@ class MyGroup extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (this.props.match.params.username !== prevProps.match.params.username) {
-        this.fetchMyGroup();
+            this.fetchMyGroup();
         }
     }
 
@@ -170,13 +166,14 @@ class MyGroup extends React.Component {
                 {this.state.members.length} members
             </div>
             <hr/>
-            <p className="mgstats">
+            <div className="mgstats">
                 Singing: {this.state.singavg} | Rapping: {this.state.rapavg} | Dancing: {this.state.danceavg}
-                <br/>
+            <p id="actions">
                 <Link id="perflink" className="perflink" to={perfLink}>{">> Perform <<"}</Link>
                 <br/>
                 <small><Link id="namelink" className="splink" to="/edit">Change group name</Link></small>
             </p>
+            </div>
             <hr/>
             <table className="mygroupTable">
             <tbody>
