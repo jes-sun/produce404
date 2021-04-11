@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 const path = require('path');
 const port = process.env.PORT || 8080;
-const host = "0.0.0.0";
+//const host = "0.0.0.0";
 
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
@@ -16,7 +16,7 @@ const buildPath = path.join(__dirname, '../build');
 app.use(express.static(buildPath));
 console.log("Express serving", buildPath);
 
-var server = app.listen(port, host, function () {
+var server = app.listen(port, function () {
     //var host = server.address().address
     var port = server.address().port
 
@@ -25,7 +25,7 @@ var server = app.listen(port, host, function () {
         database = db.db("CP476");
     })
 
-    console.log("Produce 404 API listening at http://%s:%s", host,  port);
+    console.log("Produce 404 API listening at port %s", port);
  })
 
 app.use((req, res, next) => {
