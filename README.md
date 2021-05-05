@@ -19,7 +19,7 @@ If you want to launch the app locally, follow these steps.
 
 The UI is simple and user friendly. Data that is returned from the server is presented in a clean and consistent interface.
 
-![Homepage UI](images/songchoiceUI.png){width=600px}
+![Homepage UI](images/songchoiceUI.PNG){width=600px}
 
 Profile and user group pages display extra links and buttons if the owner is logged in. If viewing another person's pages, extra links and buttons are disabled. The images below demonstrate a page when one is the owner, and the same page when one is not the owner.
 
@@ -29,19 +29,19 @@ Profile and user group pages display extra links and buttons if the owner is log
 
 Some components are able to be interacted with. Aside from buttons and input fields, there are also decorative aspects, most notably the leaderboard entries and song buttons which are highlighted when they are hovered over.
 
-![Leaderboard UI](images/leaderboardUI.png){width=600px}
-![Song choice UI](images/songchoiceUI.png){width=600px}
+![Leaderboard UI](images/leaderboardUI.PNG){width=600px}
+![Song choice UI](images/songchoiceUI.PNG){width=600px}
 
-![Performances UI](images/songchoiceUI.png){width=600px}
+![Performances UI](images/songchoiceUI.PNG){width=600px}
 
 ### Server side CGI components
 
 The React app is hosted on an Express server, which also hosts the API for the app. When the server starts, it gets an authorization token from the Spotify API to be used for requests. This token is refreshed when it expires. The server's API handles all database requests, including login/registration services and access to the idol database. The server also calculates the score for a performance given a user's group and song choice. Using this song choice, the server contacts the YouTube search API and returns the first video result for the song. This allows the user's chosen song to be played in the client's embedded player.
 
-![Server start](images/serverStart.png){width=600px}
-![Checking token expiry](images/token.png){width=600px}
-![New user creation](images/newUser.png){width=600px}
-![Performance](images/newUser.png){width=600px}
+![Server start](images/serverStart.PNG){width=600px}
+![Checking token expiry](images/token.PNG){width=600px}
+![New user creation](images/newUser.PNG){width=600px}
+![Performance](images/newUser.PNG){width=600px}
 
 ### Database tier design, data, usage
 
@@ -56,13 +56,13 @@ The collections in the database are as follows:
 - `user_group_members` - idols added to each custom group
 - `user_profile` - user profile info
 
-![Database](images/database.png){width=200px}
+![Database](images/database.PNG){width=200px}
 
 ### New features and tools
 
 The entry at #1 on the leaderboard will determine the song initially played by the embedded YouTube video player at the top of the page. Selecting any other song on the list will replace the currently playing song with the chosen one.
 
-![Video player](images/videoPlayer.png){width=200px}
+![Video player](images/videoPlayer.PNG){width=200px}
 
 ### Problem solving algorithms
 
