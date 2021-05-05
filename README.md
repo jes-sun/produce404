@@ -1,7 +1,13 @@
 # Produce 404
 Create your own K-pop girl group! A React app served by a Node.js backend with a REST API. Connects to a MongoDB database, the Spotify API, and the YouTube API.
 
+This is my first ever full-sized web development project. I learned a lot along the way, but there is a lot I would improve on and fix if I were to make this again. It's a little messy, but the functionality's all there. I'm pretty proud of what I was able to create for my first web app.
+
 ## How to use
+[Produce 404 can be found on Heroku.](https://produce404.herokuapp.com/)
+
+If you want to launch the app locally, follow these steps.
+
 1. `cd` to the `/pd404` directory
 2. `npm run build`
 3. `npm start`
