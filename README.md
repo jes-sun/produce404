@@ -5,6 +5,7 @@ This is my first ever full-sized web development project. I learned a lot along 
 
 ## How to use
 [Produce 404 can be found on Heroku.](https://produce404.herokuapp.com/)
+Please note that the website will take a short moment to load once opened.
 
 If you want to launch the app locally, follow these steps.
 
