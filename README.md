@@ -3,8 +3,9 @@ Create your own K-pop girl group! A React app served by a Node.js backend with a
 
 This is my first ever full-sized web development project. I learned a lot along the way, but there is a lot I would improve on and fix if I were to make this again. It's messy, and there are a lot of questionable coding decisions (why did I keep calling function components?), but the functionality's all there. I'm pretty proud of what I was able to create for my first web app. I've definitely learned a lot from this project.
 
-## How to use
+## Live Link
 [Produce 404 can be found on Heroku.](https://produce404.herokuapp.com/)
+
 Please note that the website will take a short moment to load once opened.
 
 If you want to launch the app locally, follow these steps.
