@@ -8,7 +8,7 @@ const port = process.env.PORT || 8080;
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
                                                                                                                                     
-const url = "mongodb+srv://admin:admin@cp476.xh5o6.mongodb.net/test?retryWrites=true&w=majority&useNewUrlParser=true&useUnifiedTopology=true";
+const url = process.env.DB_URL;
 const client = new MongoClient(url);
 var database;
 
@@ -244,8 +244,8 @@ app.post('/api/leaderboard/new', function(req, res) {
 var current_access_token;
 var access_token_expiry;
 
-var client_id = "8fbe3277ff10421cb6bd854da75a97e8";
-var client_secret = "6793e45073ce40efba577842be1d60e7";
+var client_id = process.env.SPOTIFY_CLIENT_ID;
+var client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 // Compare token expiry time
 function tokenExpired() {
@@ -374,7 +374,7 @@ app.post('/api/performance', function(req, apires) {
 
 // Get video
 app.get('/api/video/:group/:song', function(req,apires) {
-    var yt_api_key = "AIzaSyCY1-7O_UlAI9wuwM5WPC2wV_TwS2MOosM";
+    var yt_api_key = process.env.YT_API_KEY;
 
     axios(
         {
