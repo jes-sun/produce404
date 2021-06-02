@@ -1,10 +1,10 @@
-/node_modules
 /.pnp
 .pnp.js
 
-/build
+build/
 /server/.env
-/server/node_modules
+server/node_modules/
+node_modules/ 
 
 .DS_Store
 .env.local
