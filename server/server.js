@@ -1,30 +1,33 @@
 
-var express = require('express');
-var app = express();
+const express = require('express');
+const app = express();
 const path = require('path');
-const port = process.env.PORT || 8080;
-//const host = "0.0.0.0";
-
+const bcrypt = require("bcrypt");
 const { MongoClient } = require("mongodb");
 const axios = require('axios');
+
+const saltRounds = 10;
+
+const port = process.env.PORT || 8080;
                                                                                                                                     
-const url = process.env.DB_URL;
-const client = new MongoClient(url);
-var database;
+const dburl = process.env.DB_URL;
+const client = new MongoClient(dburl);
+let database;
 
-const buildPath = path.join(__dirname, '../build');
-app.use(express.static(buildPath));
-console.log("Express serving", buildPath);
+// const buildPath = path.join(__dirname, '../build');
+// app.use(express.static(buildPath));
+// console.log("Express serving", buildPath);
 
-var server = app.listen(port, function () {
-    //var host = server.address().address
-    var port = server.address().port
-
-    MongoClient.connect(url, function(err, db) {
-        if(err) throw err;
-        database = db.db("CP476");
-    })
-
+let server = app.listen(port, () => {
+    const port = server.address().port;
+    try {
+        MongoClient.connect(url, (err, db) => {
+            if (err) throw err;
+            database = db.db("CP476");
+        })
+    } catch (err) {
+        console.error(err);
+    }
     console.log("Produce 404 API listening at port %s", port);
  })
 
@@ -39,113 +42,227 @@ app.use(express.json());
 ////// Idol database
 
 // Get groups
-app.get('/api/groups/:groupName', function (req, res) {
-    
-    // Get all
-    if(req.params.groupName == "all") {
-        database.collection("groups").find({}).sort({"group_name": 1}).toArray(function(err, result) {
-            res.send(result);
-        })
-    } else {
-        // Get one
-        database.collection("groups").find({"group_name":req.params.groupName}).toArray(function(err, result) {
-           res.send(result);
-        })
-    }  
-    
+// params: groupName
+// returns: groups (array[obj], if groupName = "all") OR group (obj, if groupName != "all")
+// returns false if unsuccessful
+app.get('/api/groups/:groupName', (req, res) => {
+    try {
+        // Get all
+        if(req.params.groupName == "all") {
+            database.collection("groups").find({}).sort({"group_name": 1}).toArray((err, groups) => {
+                if (err) throw err;
+                res.send(groups);
+            })
+        } else {
+            // Get one
+            database.collection("groups").findOne({"group_name":req.params.groupName}, (err, group) => {
+                if (err) throw err;
+                res.send(group);
+            })
+        }  
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }
 }) 
 
 // Get list of members in group
-app.get('/api/groups/:groupName/members', function(req,res) {
-    database.collection("members_info").find({"group":req.params.groupName}).toArray(function(err, result) {
-        res.send(result);
-    })
+// params: groupName
+// returns: group members (array[obj])
+// returns false if unsuccessful
+app.get('/api/groups/:groupName/members', (req, res) => {
+    try {
+        database.collection("members_info").find({"group":req.params.groupName}).toArray((err, members) => {
+            if (err) throw err;
+            res.send(members);
+        })  
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }  
 })
 
 // Get member from group + stage name
-app.get('/api/groups/:groupName/members/:memberName', function (req, res) {
-     
-    database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}).toArray(function(err, result) {
-        res.send(result);
-    })       
+// params: groupName, memberName
+// returns: member info (obj)
+// returns false if unsuccessful
+app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
+    try {
+        database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
+            if (err) throw err;
+            res.send(member);
+        })       
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }
 })
 
 // Get member from member id
-app.get('/api/memberid/:memberid', function (req, res) {
-     
-    database.collection("members_info").find({"member_id":req.params.memberid}).toArray(function(err, result) {
-        res.send(result);
-    })       
+// params: memberId
+// returns: member info (obj)
+// returns false if unsuccessful
+app.get('/api/memberid/:memberid', (req, res) => {
+    try {
+        database.collection("members_info").find({"member_id":req.params.memberid}, (err, member) => {
+            res.send(member);
+        })       
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }
+    
 })
 
 ////// Account/Profile
 
 // Login attempt
+// body: username, password
+// returns: true if successful, false if unsuccessful
 app.post('/api/login', function(req,res) {
-    console.log("Attempted login",req.body.username, req.body.password);
-    database.collection("user").find({"username":{$regex: "^"+req.body.username+"$"}, "password":req.body.password}).toArray(function(err,result) {
-        if(result) {
-            console.log("Login from", req.body.username);
-            res.send(result);
-        } else res.send([]);
-    })
+    console.log("Attempted login",req.body.username);
+    const username = req.body.username
+
+    try {
+        database.collection("user").findOne({
+            "username": {$regex: "^"+req.body.username+"$"}, 
+            "password": req.body.password
+            }, (err, user) => {
+                if (err) throw err;
+                if (user) {
+                    console.log("User", username, "found")
+                    bcrypt.compare(req.body.password, user.password, (err, passCheck) => {
+                        if (err) throw err;
+                        passCheck ? console.log("Password correct") : console.log("Password incorrect")
+                        res.send(passCheck)
+                    })
+                } else {
+                    console.log("User", username, "not found")
+                    res.send(false); 
+                } 
+            }) 
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }
 })
 
 // Registration attempt
-app.post('/api/register', function(req,res) {
-    var newUser = { username:req.body.username, password:req.body.password, role:1 };
-    
-    database.collection("user").find({"username":{$regex: "^"+newUser.username+"$"}}).toArray(function(err,result) {
-        console.log("Attempted registration",result);
-        if(!result[0]){
-            database.collection("user").insertOne(newUser, function(err, result) {
-                console.log("New user",newUser);
+// body: username, password
+// returns: true if successful, false if unsuccessful
+app.post('/api/register', (req, res) => {
+    console.log("Attempted registration", req.body.username);
+    const username = req.body.username;
+    try {
+        database.collection("user").findOne({
+            "username": {$regex: "^" + newUser.username + "$"
+            }}, (err, user) => {
+                if (err) throw err;
+                if(!user){
+                    console.log("Username", username, "available");
+                    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+                        if (err) throw err;
+                        const newUser = { username: username, password: hash, role: 1 };
+                        database.collection("user").insertOne(newUser, (err, result) => {
+                            
+                            console.log("New user", newUser);
+
+                            const newUserInfo = {
+                                username: username,
+                                group_name:"My K-pop Group",
+                                name:"New User",
+                                location:"Anywhere",
+                                bio:"No bio yet."
+                            }
+                            database.collection("user_profile").insertOne(newUserInfo, (err, result) => {
+                                if (err) throw err;
+                                res.send(true);
+                            })
+                        })
+                    })
+                } else {
+                    console.log("Username", username, "not available")
+                    res.send(false)
+                }
             })
-            var newUserInfo = {username:newUser.username,group_name:"My K-pop Group",name:"New User",location:"Anywhere",bio:"No bio yet."}
-            database.collection("user_profile").insertOne(newUserInfo, function(err, result) {
-                console.log("New user info",newUserInfo);
-                res.send([newUser]);
-            })
-        } else {
-            console.log("Registration unsuccessful");
-            res.send([]);
-        }
-    })
-    
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }  
 })
 
 // Profile page
+// params: username
+// returns: user profile info (obj)
+// returns false if unsuccessful
 app.get('/api/profile/:username', function(req,res) {
-    database.collection("user_profile").find({"username":{$regex: "^"+req.params.username+"$"}}).toArray(function(err, result) {
-        res.send(result);
+    database.collection("user_profile").findOne({
+        "username": { $regex: "^" + req.params.username + "$"}}, 
+        (err, profile) => {
+            if (err) throw err;
+            res.send(profile);
     })
 })
 
 // User list
+// returns: user list (array[obj])
+// returns false if unsuccessful
 app.get('/api/userlist', function(req,res) {
-    database.collection("user_profile").find({}).sort({"username":1}).toArray(function(err,result) {
-        res.send(result);
-    })
+    try {
+        database.collection("user_profile").find({}).sort({"username":1}).toArray((err, userList) => {
+            if (err) throw err;
+            res.send(userList);
+        })
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }  
 })
 
 // Update profile info
+// body: username, group_name, name, location, bio
+// returns: true if successful, false if unsuccessful
 app.post('/api/edit', function(req,res) {
-    var newProfile = {username:req.body.username, group_name:req.body.group_name, name:req.body.name, location:req.body.location, bio:req.body.bio };
-    
-    database.collection("user_profile").updateOne({"username":{$regex: "^"+req.body.username+"$"}},{$set: newProfile},function(err, result) {
-        res.send(result);
+    const newProfile = { 
+        username:req.body.username, 
+        group_name:req.body.group_name, 
+        name:req.body.name, 
+        location:req.body.location, 
+        bio:req.body.bio 
+    };
+    try {
+        database.collection("user_profile").updateOne({
+            "username": {$regex: "^" + req.body.username + "$"}
+        }, 
+        {$set: newProfile}, 
+        (err, result) => {
+            if (err) throw err;
+            res.send(true);
     })
-    
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }  
 })
 
 // Delete account
+// body: username
+// returns: true if successful, false if unsuccessful
 app.post('/api/deleteaccount', function(req,res) {
-    database.collection("user_profile").deleteOne({"username":{$regex: "^"+req.body.username+"$"}}, function(err, result) {
-        database.collection("user").deleteOne({"username":{$regex: "^"+req.body.username+"$"}}, function(err,result) {
-            console.log("Deleted account", req.body.username);
-            res.send({username:req.body.username});
+    try {
+        database.collection("user").deleteOne({"username":{$regex: "^"+req.body.username+"$"}}, (err, result) => {
+            if (err) throw err;
+
+            database.collection("user_profile").deleteOne({"username":{$regex: "^"+req.body.username+"$"}}, (err ,result) => {
+                if (err) throw err;
+                console.log("Deleted account", req.body.username);
+                res.send(true);
+            })
         })
-    })
+    } catch (err) {
+        console.error(err);
+        res.send(false);
+    }
 })
     
 
