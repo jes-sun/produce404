@@ -82,7 +82,7 @@ app.get('/api/groups/:groupName/members', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName}).toArray((err, members) => {
             if (err) throw err;
-            if (!members) {
+            if (members.length === 0) {
                 res.sendStatus(404);
                 return;
             }
@@ -365,7 +365,7 @@ app.get('/api/:username/mygroup', (req, res) => {
         .project({"member":1})
         .toArray((err, membersList) => {
             if (err) throw err;
-            if (membersList.length == 0) {
+            if (membersList.length === 0) {
                 res.sendStatus(404);
                 return;
             }
