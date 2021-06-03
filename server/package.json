@@ -6,7 +6,9 @@
   "dependencies": {
     "axios": "^0.21.1",
     "bcrypt": "^5.0.1",
-    "mongodb": "^3.6.6"
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "mongodb": "^3.6.9"
   },
   "devDependencies": {},
   "scripts": {

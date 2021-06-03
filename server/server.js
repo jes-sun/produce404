@@ -8,6 +8,10 @@ const axios = require('axios');
 
 const saltRounds = 10;
 
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+}
+
 const port = process.env.PORT || 8080;
                                                                                                                                     
 const dburl = process.env.DB_URL;
@@ -21,7 +25,7 @@ let database;
 let server = app.listen(port, () => {
     const port = server.address().port;
     try {
-        MongoClient.connect(url, (err, db) => {
+        MongoClient.connect(dburl, (err, db) => {
             if (err) throw err;
             database = db.db("CP476");
         })
