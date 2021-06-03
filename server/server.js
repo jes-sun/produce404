@@ -44,7 +44,7 @@ app.use(express.json());
 // Get groups
 // params: groupName
 // returns: groups (array[obj], if groupName = "all") OR group (obj, if groupName != "all")
-// returns false if unsuccessful
+// returns error code 500 if database error
 app.get('/api/groups/:groupName', (req, res) => {
     try {
         // Get all
@@ -62,14 +62,14 @@ app.get('/api/groups/:groupName', (req, res) => {
         }  
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }
 }) 
 
 // Get list of members in group
 // params: groupName
 // returns: group members (array[obj])
-// returns false if unsuccessful
+// returns error code 500 if database error
 app.get('/api/groups/:groupName/members', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName}).toArray((err, members) => {
@@ -78,14 +78,14 @@ app.get('/api/groups/:groupName/members', (req, res) => {
         })  
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }  
 })
 
 // Get member from group + stage name
 // params: groupName, memberName
 // returns: member info (obj)
-// returns false if unsuccessful
+// returns error code 500 if database error
 app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
@@ -94,14 +94,14 @@ app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
         })       
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }
 })
 
 // Get member from member id
 // params: memberId
 // returns: member info (obj)
-// returns false if unsuccessful
+// returns error code 500 if database error
 app.get('/api/memberid/:memberid', (req, res) => {
     try {
         database.collection("members_info").find({"member_id":req.params.memberid}, (err, member) => {
@@ -109,7 +109,7 @@ app.get('/api/memberid/:memberid', (req, res) => {
         })       
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }
     
 })
@@ -118,7 +118,8 @@ app.get('/api/memberid/:memberid', (req, res) => {
 
 // Login attempt
 // body: username, password
-// returns: true if successful, false if unsuccessful
+// returns: true if successful, false if username does not exist
+// returns error code 500 if database error
 app.post('/api/login', function(req,res) {
     console.log("Attempted login",req.body.username);
     const username = req.body.username
@@ -143,13 +144,14 @@ app.post('/api/login', function(req,res) {
             }) 
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }
 })
 
 // Registration attempt
 // body: username, password
-// returns: true if successful, false if unsuccessful
+// returns: true if successful, false if accound already exists
+// returns error code 500 if database error
 app.post('/api/register', (req, res) => {
     console.log("Attempted registration", req.body.username);
     const username = req.body.username;
@@ -187,27 +189,33 @@ app.post('/api/register', (req, res) => {
             })
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }  
 })
 
 // Profile page
 // params: username
 // returns: user profile info (obj)
-// returns false if unsuccessful
-app.get('/api/profile/:username', function(req,res) {
-    database.collection("user_profile").findOne({
-        "username": { $regex: "^" + req.params.username + "$"}}, 
-        (err, profile) => {
-            if (err) throw err;
-            res.send(profile);
-    })
+// returns error code 500 if database error
+app.get('/api/profile/:username', (req, res) => {
+    try {
+        database.collection("user_profile").findOne({
+            "username": { $regex: "^" + req.params.username + "$"}}, 
+            (err, profile) => {
+                if (err) throw err;
+                res.send(profile);
+        })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 })
 
 // User list
 // returns: user list (array[obj])
 // returns false if unsuccessful
-app.get('/api/userlist', function(req,res) {
+// returns error code 500 if database error
+app.get('/api/userlist', (req, res) => {
     try {
         database.collection("user_profile").find({}).sort({"username":1}).toArray((err, userList) => {
             if (err) throw err;
@@ -215,14 +223,15 @@ app.get('/api/userlist', function(req,res) {
         })
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }  
 })
 
 // Update profile info
 // body: username, group_name, name, location, bio
-// returns: true if successful, false if unsuccessful
-app.post('/api/edit', function(req,res) {
+// returns: true if successful
+// returns error code 500 if database error
+app.post('/api/edit', (req, res) => {
     const newProfile = { 
         username:req.body.username, 
         group_name:req.body.group_name, 
@@ -241,14 +250,15 @@ app.post('/api/edit', function(req,res) {
     })
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }  
 })
 
 // Delete account
 // body: username
-// returns: true if successful, false if unsuccessful
-app.post('/api/deleteaccount', function(req,res) {
+// returns: true if successful
+// returns error code 500 if database error
+app.post('/api/deleteaccount', (req, res) => {
     try {
         database.collection("user").deleteOne({"username":{$regex: "^"+req.body.username+"$"}}, (err, result) => {
             if (err) throw err;
@@ -261,7 +271,7 @@ app.post('/api/deleteaccount', function(req,res) {
         })
     } catch (err) {
         console.error(err);
-        res.send(false);
+        res.sendStatus(500);
     }
 })
     
@@ -269,104 +279,151 @@ app.post('/api/deleteaccount', function(req,res) {
 ////// Personal group
 
 // Add idol to personal group
-app.post('/api/add', function(req,res) {
-    var addMember = {username:req.body.username, member:req.body.member};
+// body: username, member
+// returns true if successful, false if member already in user's group
+// returns error code 500 if database error
+app.post('/api/add', (req, res) => {
+    const addMember = { username: req.body.username, member: req.body.member };
 
-    database.collection("user_group_members").find(addMember).toArray(function(err, result) {
-        if(!result[0]) {
-            database.collection("user_group_members").insertOne(addMember, function(err, result) {
-                res.send([addMember]);
-            })
-        } else {
-            res.send([]);
-        }
-    })
+    try {
+        database.collection("user_group_members").find(addMember, (err, member) => {
+            if (err) throw err;
+            if (!member) {
+                database.collection("user_group_members").insertOne(addMember, (err, result) => {
+                    res.send(true);
+                })
+            } else {
+                res.send(false);
+            }
+        })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 })
 
 // Remove idol from personal group
-app.post('/api/remove', function(req,res) {
-    var removeMember = {username:req.body.username, member:req.body.member};
+// body: username, member
+// returns true if successful, false if member not in user's group
+// returns error code 500 if database error
+app.post('/api/remove', (req, res) => {
+    const removeMember = { username: req.body.username, member: req.body.member };
 
-    database.collection("user_group_members").find(removeMember).toArray(function(err, result) {
-        if(result[0]) {
-            database.collection("user_group_members").deleteOne(removeMember, function(err, result) {
-                res.send([removeMember]);
-            })
-        } else {
-            res.send([]);
-        }
-    })
+    try {
+        database.collection("user_group_members").find(removeMember).toArray((err, member) => {
+            if (err) throw err;
+            if(member) {
+                database.collection("user_group_members").deleteOne(removeMember, (err, result) => {
+                    if (err) throw err;
+                    res.send(true);
+                })
+            } else {
+                res.send(false);
+            }
+        })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 })
 
 // Retrieve personal group
-app.get('/api/:username/mygroup', function(req,apires) {
-    var username = req.params.username;
-    var members = [];
+// params: username
+// returns: members (arr[obj])
+// returns error code 500 if database error
+app.get('/api/:username/mygroup', (req, res) => {
+    const username = req.params.username;
+    let myMembers = [];
 
-    database.collection("user_group_members").find({"username":username})
-    .sort({"member": 1})
-    .project({"member":1})
-    .toArray(function(err, db1res) {
-        db1res.forEach(member=> {
-            database.collection("members_info").findOne({"member_id":member.member}, function(err, db2res) {
-                members.push(db2res);
-                if(members.length === db1res.length) {
-                    apires.send(members);
-                }
+    try {
+        database.collection("user_group_members").find({"username":username})
+        .sort({"member": 1})
+        .project({"member":1})
+        .toArray((err, membersList) => {
+            if (err) throw err;
+            membersList.forEach(member => {
+                database.collection("members_info").findOne({"member_id":member.member}, (err, memberInfo) => {
+                    if (err) throw err;
+                    myMembers.push(memberInfo);
+                    if(myMembers.length === membersList.length) {
+                        res.send(myMembers);
+                    }
+                })
             })
         })
-    })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+
+    
 })
 
 ////// Leaderboard
 
 // Retrieve leaderboard
-app.get('/api/leaderboard', function(req, res) {
-
-    database.collection("leaderboard").find({}).sort({"score":-1}).toArray(function(err, result) {
-        res.send(result);
-    })
+// returns: entries (arr[obj])
+// returns error code 500 if database error
+app.get('/api/leaderboard', (req, res) => {
+    try {
+        database.collection("leaderboard").find({}).sort({"score":-1}).toArray((err, entries) => {
+            if (err) throw err;
+            res.send(entries);
+        })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 })
 
 // Add to leaderboard
-app.post('/api/leaderboard/new', function(req, res) {
-    var entry = {
+// body: username, score, groupName, groupMembers, song, videoId, date
+// returns: true if successful, false if leaderboard entry already exists
+// returns error code 500 if database error
+app.post('/api/leaderboard/new', (req, res) => {
+    const entry = {
         username: req.body.username,
         score: req.body.score,
-        group_name: req.body.group_name,
-        group_members: req.body.group_members,
+        group_name: req.body.groupName,
+        group_members: req.body.groupMembers,
         song: req.body.song,
-        video_id: req.body.video_id,
+        video_id: req.body.videoId,
         date: req.body.date
     }
-    
-    database.collection("leaderboard").find(entry).toArray(function(err,db1res) {
-        if(!db1res[0]){
-            database.collection("leaderboard").insertOne(entry, function(err,db2res){
-                console.log("Leaderboard entry by", entry.username);
-                res.send(entry);
-            })
-        } else {
-            console.log("Leaderboard entry already exists");
-                res.send(entry);
-        }
-    })
-    
+
+    try {
+        database.collection("leaderboard").findOne(entry).toArray((err, lbEntry) => {
+            if (err) throw err;
+            if(!lbEntry){
+                database.collection("leaderboard").insertOne(entry, (err, result) => {
+                    if (err) throw err;
+                    console.log("Leaderboard entry by", entry.username);
+                    res.send(true);
+                })
+            } else {
+                console.log("Leaderboard entry already exists");
+                    res.send(false);
+            }
+        })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }    
 })
 
 // Retrieve highest leaderboard entry for user
 
 
 ////// Connect to Spotify
-var current_access_token;
-var access_token_expiry;
+let current_access_token;
+let access_token_expiry;
 
-var client_id = process.env.SPOTIFY_CLIENT_ID;
-var client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+const client_id = process.env.SPOTIFY_CLIENT_ID;
+const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 // Compare token expiry time
 function tokenExpired() {
-    if(access_token_expiry){
+    if (access_token_expiry) {
         console.log("Current token expires in", access_token_expiry - Date.now(), "ms");
         return Date.now() > access_token_expiry;
     } else return true;
@@ -375,7 +432,7 @@ function tokenExpired() {
 
 // Return token according to expiry
 async function checkExpiry() {
-    if(tokenExpired()) {
+    if (tokenExpired()) {
         const new_token = await spotifyAuth();
         console.log("Using new token",new_token);
         return new_token;
@@ -401,7 +458,7 @@ async function spotifyAuth() {
         params: { grant_type:"client_credentials" }
       })
     .catch(err => {
-        console.log(err);
+        console.error(err);
         return;
     })
     console.log("Spotify auth:",auth.data);
@@ -413,54 +470,64 @@ async function spotifyAuth() {
 checkExpiry();
 
 // Get a group's top tracks
-app.get('/api/tracks/:group', function(req, apires) {
+// params: group
+// returns: tracks (arr[obj])
+// returns error code 500 if error with database or Spotify API
+app.get('/api/tracks/:group', (req, res) => {
     checkExpiry().then((token) => {
-        var group = req.params.group;
-        var artist_id;
-    
-        database.collection("groups").findOne({"group_name":group}, function(err, dbres) {
-            artist_id = dbres.artist_id;
-    
-            console.log("Retrieving top tracks for", group, artist_id);
-    
-            axios({
-                url: "https://api.spotify.com/v1/artists/" + artist_id + "/top-tracks",
-                headers: {
-                    "Accept":"application/json",
-                    "Content-Type":"application/json",
-                    "Authorization":"Bearer " + token
-                },
-                method: "get",
-                params: { market:"CA" }
-              })
-            .then((axres) => {
-                var tracks = [];
-                axres.data.tracks.forEach(track => {
-                    tracks.push({id:track.id, name:track.name, album:track.album.name, imageurl:track.album.images[1].url});
-                })
-                apires.send(tracks);
-            })
-            .catch(err => {
-                console.log(err);
-            })
-        })
-    })
+        const group = req.params.group;
+        let artistId;
 
-    
+        try {    
+            database.collection("groups").findOne({"group_name":group}, (err, group) => {
+                if (err) throw err;
+                artistId = group.artist_id;
+        
+                console.log("Retrieving top tracks for", group, artistId);
+        
+                axios({
+                    url: "https://api.spotify.com/v1/artists/" + artistId + "/top-tracks",
+                    headers: {
+                        "Accept":"application/json",
+                        "Content-Type":"application/json",
+                        "Authorization":"Bearer " + token
+                    },
+                    method: "get",
+                    params: { market:"CA" }
+                })
+                .then((axres) => {
+                    let tracks = [];
+                    axres.data.tracks.forEach(track => {
+                        tracks.push({id:track.id, name:track.name, album:track.album.name, imageurl:track.album.images[1].url});
+                    })
+                    res.send(tracks);
+                })
+                .catch(err => {
+                    throw err;
+                })
+            })
+        } catch (err) {
+            console.error(err);
+            res.send(500);
+        }
+    })
 })
 
 // Get score for a performance
-app.post('/api/performance', function(req, apires) {
+// body: trackID, singAvg, rapAvg, danceAvg
+// returns: score (obj)
+// returns error code 500 if error with Spotify API
+app.post('/api/performance', (req, res) => {
     checkExpiry().then((token) => {
 
-        var track_id = req.body.track_id;
-        var singavg = req.body.singavg;
-        var rapavg = req.body.rapavg;
-        var danceavg = req.body.danceavg;
+        const trackId = req.body.trackId;
+        const singAvg = req.body.singavg;
+        const rapAvg = req.body.rapavg;
+        const danceAvg = req.body.danceavg;
         
         // Get features
         axios({
-            url: "https://api.spotify.com/v1/audio-features/" + track_id,
+            url: "https://api.spotify.com/v1/audio-features/" + trackId,
             headers: {
                 "Accept":"application/json",
                 "Content-Type":"application/json",
@@ -470,28 +537,30 @@ app.post('/api/performance', function(req, apires) {
             })
         .then((axres) => {
             // Calculate score
-            var m_sing = 1 - axres.data.speechiness;
-            var m_rap = axres.data.energy;
-            var m_dance = axres.data.danceability;
+            const m_sing = 1 - axres.data.speechiness;
+            const m_rap = axres.data.energy;
+            const m_dance = axres.data.danceability;
 
-            var score = Math.round((((singavg * m_sing) + (rapavg * m_rap) + (danceavg * m_dance)) * 1000000)/6);
+            const score = Math.round((((singAvg * m_sing) + (rapAvg * m_rap) + (danceAvg * m_dance)) * 1000000)/6);
 
             console.log("Score is",score);
-            apires.send({score:score});
+            res.send({ score: score });
         })
         .catch(err => {
-            console.log(err);
-            apires.send({score:-1});
+            console.error(err);
+            res.sendStatus(500);
         })
-    
     })
 })
 
 ////// Connect to YouTube 
 
 // Get video
-app.get('/api/video/:group/:song', function(req,apires) {
-    var yt_api_key = process.env.YT_API_KEY;
+// params: group, song
+// returns: videoId (obj)
+// returns error code 500 if error with YouTube API
+app.get('/api/video/:group/:song', (req, res) => {
+    const yt_api_key = process.env.YT_API_KEY;
 
     axios(
         {
@@ -508,15 +577,15 @@ app.get('/api/video/:group/:song', function(req,apires) {
         })
     .then((axres) => {
         console.log("YouTube access", req.params.group, req.params.song, "id",axres.data.items[0].id.videoId);
-        apires.send({video_id:axres.data.items[0].id.videoId});
+        res.send({ videoId: axres.data.items[0].id.videoId });
     })
     .catch(err => {
-        console.log(err);
-        apires.send();
+        console.error(err);
+        res.sendStatus(500);
     })
 })
 
 ////// React
-app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../build/index.html'));
-  });
+// app.get('/*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../build/index.html'));
+// });
