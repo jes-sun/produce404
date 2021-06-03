@@ -48,7 +48,7 @@ app.use(express.json());
 // Get groups
 // params: groupName
 // returns: groups (array[obj], if groupName = "all") OR group (obj, if groupName != "all")
-// returns error code 500 if database error
+// returns error codes 404 if group not found, 500 if database error
 app.get('/api/groups/:groupName', (req, res) => {
     try {
         // Get all
@@ -61,6 +61,7 @@ app.get('/api/groups/:groupName', (req, res) => {
             // Get one
             database.collection("groups").findOne({"group_name":req.params.groupName}, (err, group) => {
                 if (err) throw err;
+                if (!group) res.sendStatus(404);
                 res.send(group);
             })
         }  
@@ -73,11 +74,12 @@ app.get('/api/groups/:groupName', (req, res) => {
 // Get list of members in group
 // params: groupName
 // returns: group members (array[obj])
-// returns error code 500 if database error
+// returns error codes 404 if members not found, 500 if database error
 app.get('/api/groups/:groupName/members', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName}).toArray((err, members) => {
             if (err) throw err;
+            if (!members) res.sendStatus(404);
             res.send(members);
         })  
     } catch (err) {
@@ -89,11 +91,12 @@ app.get('/api/groups/:groupName/members', (req, res) => {
 // Get member from group + stage name
 // params: groupName, memberName
 // returns: member info (obj)
-// returns error code 500 if database error
+// returns error codes 404 if member not found, 500 if database error
 app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
             if (err) throw err;
+            if (!member) res.sendStatus(404);
             res.send(member);
         })       
     } catch (err) {
@@ -105,10 +108,11 @@ app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
 // Get member from member id
 // params: memberId
 // returns: member info (obj)
-// returns error code 500 if database error
+// returns error codes 404 if member not found, 500 if database error
 app.get('/api/memberid/:memberid', (req, res) => {
     try {
         database.collection("members_info").find({"member_id":req.params.memberid}, (err, member) => {
+            if (!member) res.sendStatus(404);
             res.send(member);
         })       
     } catch (err) {
@@ -154,7 +158,7 @@ app.post('/api/login', function(req,res) {
 
 // Registration attempt
 // body: username, password
-// returns: true if successful, false if accound already exists
+// returns: true if successful, false if account already exists
 // returns error code 500 if database error
 app.post('/api/register', (req, res) => {
     console.log("Attempted registration", req.body.username);
@@ -200,13 +204,14 @@ app.post('/api/register', (req, res) => {
 // Profile page
 // params: username
 // returns: user profile info (obj)
-// returns error code 500 if database error
+// returns error codes 404 if user not found, 500 if database error
 app.get('/api/profile/:username', (req, res) => {
     try {
         database.collection("user_profile").findOne({
             "username": { $regex: "^" + req.params.username + "$"}}, 
             (err, profile) => {
                 if (err) throw err;
+                if (!profile) res.sendStatus(404);
                 res.send(profile);
         })
     } catch (err) {
@@ -232,13 +237,13 @@ app.get('/api/userlist', (req, res) => {
 })
 
 // Update profile info
-// body: username, group_name, name, location, bio
+// body: username, groupName, name, location, bio
 // returns: true if successful
 // returns error code 500 if database error
 app.post('/api/edit', (req, res) => {
     const newProfile = { 
         username:req.body.username, 
-        group_name:req.body.group_name, 
+        group_name:req.body.groupName, 
         name:req.body.name, 
         location:req.body.location, 
         bio:req.body.bio 
@@ -334,7 +339,7 @@ app.post('/api/remove', (req, res) => {
 // Retrieve personal group
 // params: username
 // returns: members (arr[obj])
-// returns error code 500 if database error
+// returns error codes 404 if user not found, 500 if database error
 app.get('/api/:username/mygroup', (req, res) => {
     const username = req.params.username;
     let myMembers = [];
@@ -345,6 +350,7 @@ app.get('/api/:username/mygroup', (req, res) => {
         .project({"member":1})
         .toArray((err, membersList) => {
             if (err) throw err;
+            if (membersList.length == 0) res.sendStatus(404);
             membersList.forEach(member => {
                 database.collection("members_info").findOne({"member_id":member.member}, (err, memberInfo) => {
                     if (err) throw err;
@@ -414,9 +420,6 @@ app.post('/api/leaderboard/new', (req, res) => {
         res.sendStatus(500);
     }    
 })
-
-// Retrieve highest leaderboard entry for user
-
 
 ////// Connect to Spotify
 let current_access_token;
