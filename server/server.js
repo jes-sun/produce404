@@ -61,7 +61,10 @@ app.get('/api/groups/:groupName', (req, res) => {
             // Get one
             database.collection("groups").findOne({"group_name":req.params.groupName}, (err, group) => {
                 if (err) throw err;
-                if (!group) res.sendStatus(404);
+                if (!group) {
+                    res.sendStatus(404);
+                    return;
+                }
                 res.send(group);
             })
         }  
@@ -79,7 +82,10 @@ app.get('/api/groups/:groupName/members', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName}).toArray((err, members) => {
             if (err) throw err;
-            if (!members) res.sendStatus(404);
+            if (!members) {
+                res.sendStatus(404);
+                return;
+            }
             res.send(members);
         })  
     } catch (err) {
@@ -96,7 +102,10 @@ app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
     try {
         database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
             if (err) throw err;
-            if (!member) res.sendStatus(404);
+            if (!member) {
+                res.sendStatus(404);
+                return;
+            }
             res.send(member);
         })       
     } catch (err) {
@@ -112,7 +121,10 @@ app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
 app.get('/api/memberid/:memberid', (req, res) => {
     try {
         database.collection("members_info").find({"member_id":req.params.memberid}, (err, member) => {
-            if (!member) res.sendStatus(404);
+            if (!member) {
+                res.sendStatus(404);
+                return;
+            }
             res.send(member);
         })       
     } catch (err) {
@@ -211,7 +223,10 @@ app.get('/api/profile/:username', (req, res) => {
             "username": { $regex: "^" + req.params.username + "$"}}, 
             (err, profile) => {
                 if (err) throw err;
-                if (!profile) res.sendStatus(404);
+                if (!profile) {
+                    res.sendStatus(404);
+                    return;
+                }
                 res.send(profile);
         })
     } catch (err) {
@@ -350,7 +365,10 @@ app.get('/api/:username/mygroup', (req, res) => {
         .project({"member":1})
         .toArray((err, membersList) => {
             if (err) throw err;
-            if (membersList.length == 0) res.sendStatus(404);
+            if (membersList.length == 0) {
+                res.sendStatus(404);
+                return;
+            }
             membersList.forEach(member => {
                 database.collection("members_info").findOne({"member_id":member.member}, (err, memberInfo) => {
                     if (err) throw err;
