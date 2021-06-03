@@ -100,7 +100,7 @@ app.get('/api/groups/:groupName/members', (req, res) => {
 // returns error codes 404 if member not found, 500 if database error
 app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
     try {
-        database.collection("members_info").find({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
+        database.collection("members_info").findOne({"group":req.params.groupName, "stage_name":req.params.memberName}, (err, member) => {
             if (err) throw err;
             if (!member) {
                 res.sendStatus(404);
@@ -119,8 +119,10 @@ app.get('/api/groups/:groupName/members/:memberName', (req, res) => {
 // returns: member info (obj)
 // returns error codes 404 if member not found, 500 if database error
 app.get('/api/memberid/:memberid', (req, res) => {
+    const memberId = req.params.memberid;
     try {
-        database.collection("members_info").find({"member_id":req.params.memberid}, (err, member) => {
+        database.collection("members_info").findOne({ "member_id": memberId }, (err, member) => {
+            if (err) throw err;
             if (!member) {
                 res.sendStatus(404);
                 return;
