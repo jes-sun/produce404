@@ -71,7 +71,7 @@ function Homepage() {
                         </h1>
                     </Fade>
                         <div className="my-3">
-                            <Button variant="primary" size="lg" className="mx-2">
+                            <Button variant="primary" size="lg" className="mx-2" href="/register">
                                 Register
                             </Button>
                             <Button variant="secondary" size="lg" className="mx-2">
