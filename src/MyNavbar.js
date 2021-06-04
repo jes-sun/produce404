@@ -6,7 +6,6 @@ import Button from "react-bootstrap/Button";
 import Image from "react-bootstrap/Image";
 
 import logo from "./images/logo_horizontal.png";
-
 // Search bar non functional
 
 function MyNavbar() {
@@ -25,11 +24,12 @@ function MyNavbar() {
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="responsive-navbar-nav"/>
             <Navbar.Collapse id="responsive-navbar-nav">
-                <Nav className="mr-auto align-items-center">
+                <Nav className="me-auto align-items-center">
                     <Form className="d-flex align-items-center">
                         <FormControl
                             type="text" 
                             placeholder="Search"
+                            className="me-1"
                         />
                         <Button
                             variant="outline-primary"
@@ -49,7 +49,7 @@ function MyNavbar() {
                 </Nav>
                 <Nav>
                     <Nav.Link className="mx-2">
-                        Login/Register
+                        My Account
                     </Nav.Link>
                 </Nav>
             </Navbar.Collapse>
