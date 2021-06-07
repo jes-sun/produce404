@@ -16,8 +16,9 @@ function Homepage() {
     const [fadeIn2, setFadeIn2] = useState(false);
     const [fadeIn3, setFadeIn3] = useState(false);
 
-    const setFadeIns = [setFadeIn0, setFadeIn1, setFadeIn2, setFadeIn3];
+    
     React.useEffect(() => {
+        const setFadeIns = [setFadeIn0, setFadeIn1, setFadeIn2, setFadeIn3];
         setFadeIns.forEach((setFadeIn, i) => {
             setTimeout(() => {
                 setFadeIn(true);

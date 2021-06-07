@@ -171,7 +171,7 @@ app.post('/api/login', function(req,res) {
 })
 
 // Registration attempt
-// body: username, password
+// body: username, password, name, groupName
 // returns: true if successful, false if account already exists
 // returns error code 500 if database error
 app.post('/api/register', (req, res) => {
@@ -179,8 +179,7 @@ app.post('/api/register', (req, res) => {
     const username = req.body.username;
     try {
         database.collection("user").findOne({
-            "username": {$regex: "^" + newUser.username + "$"
-            }}, (err, user) => {
+            "username": {$regex: "^" + newUser.username + "$"}}, (err, user) => {
                 if (err) throw err;
                 if(!user){
                     console.log("Username", username, "available");
@@ -193,8 +192,8 @@ app.post('/api/register', (req, res) => {
 
                             const newUserInfo = {
                                 username: username,
-                                group_name:"My K-pop Group",
-                                name:"New User",
+                                group_name: req.body.groupName,
+                                name: req.body.name,
                                 location:"Anywhere",
                                 bio:"No bio yet."
                             }
@@ -213,6 +212,23 @@ app.post('/api/register', (req, res) => {
         console.error(err);
         res.sendStatus(500);
     }  
+})
+
+// Check username availability
+// body: username
+// returns: true if available, false if not
+// returns error code 500 if database error
+app.get('/api/checkusername', (req, res) => {
+    try {
+        database.collection("user").findOne({
+            "username": {$regex: "^" + newUser.username + "$"}}, (err, user) => {
+                if (err) throw err;
+                return user ? false : true;
+            })
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 })
 
 // Profile page
